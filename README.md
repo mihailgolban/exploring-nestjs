@@ -1,73 +1,96 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# Unit testing a Nestjs App
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Automated testing is considered an essential part of any serious software development effort. The reason is simple. If you have tests, you do not fear making changes to the code! Here are some recommendations to ensure the best practices.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## In General
 
-## Description
+- controllers as clean as possible
+- all business logic in services
+- e2e tests with supertest
+- unit tests with jest
+- e2e tests only checks for response ( treats controller as black box)
+- all other checks go into unit tests
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Keep controllers as clean as possible
 
-## Installation
+Controllers are where you’ll define your routes and call their corresponding services. The idea is to keep controllers as clean and as independent from your external services as possible. Finally, services contain the core of your business logic and the focus of your tests.
 
-```bash
-$ npm install
+Bad:
+
+```js
+  @Post()
+  createTask(@Body() createTaskDto: CreateTaskDto): Task {
+    const { title, description } = createTaskDto;
+
+    const task: Task = {
+      id: uuid(),
+      title,
+      description,
+      status: TaskStatus.OPEN,
+    };
+
+    this.tasks.push(task);
+    return task;
+  }
 ```
 
-## Running the app
+Good:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```js
+  @Post()
+  createTask(@Body() createTaskDto: CreateTaskDto): Task {
+    return this.tasksService.createTask(createTaskDto);
+  }
 ```
 
-## Test
+## Put all your business logic in services
 
-```bash
-# unit tests
-$ npm run test
+The service layer is responsible for data storage and retrieval, and is designed to be used by the Controller.  
+`tasks.service.ts` is a great candidate where to move the logic from the `tasks.controller.ts`.
 
-# e2e tests
-$ npm run test:e2e
+## Unit tests with jest
 
-# test coverage
-$ npm run test:cov
+Unit tests are typically automated tests written and run by software developers to ensure that a section of an application (known as the "unit") meets its design and behaves as intended.  
+Jest is provided as the default testing framework.  
+`tasks.controller.spec.ts` contains some basic tests of the TasksControler.
+
+## e2e tests with supertest
+
+While unit tests support developer productivity, End-to-end tests verify the behaviour of the system as a whole.  
+End to End testign aims to replicate real user scenarios so that the system can be validated for integration and data integrity.
+
+The e2e automation has to work with any resources/database/datatsore/message bus etc., and with any environmet including local/remote or cloud platforms
+
+Tests should always clean up after themselves. If a test creates a `Task` that gets stored in the db. When the test is done running, that `Task` should be deleted from the db. If you aren't constant about this, you'll eventually run into bugs and issues where data is inconsistent. God forbid this happens in production.
+
+Should e2e tests persist data in real databases?
+https://stackoverflow.com/questions/55093017/should-e2e-tests-persist-data-in-real-databases
+
+## e2e tests only checks for response ( treats controller as black box)
+
+E2e should mimic production system as close as possible, so you should treat controller as black box.  
+In e2e tests you should only check the response of the endpoint.
+
+```js
+describe('Tasks', () => {
+  ...
+  it('POST /tasks', () => {
+    return request(app.getHttpServer())
+      .post('/tasks')
+      .send({
+        title: 'Book flight to London',
+        description: 'Buy a flight ticket to London',
+      })
+      .expect(201)
+      .expect(sampleTask);
+  });
+});
 ```
 
-## Support
+## All other checks go into unit tests
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Any other checks you're going to perform should go in unit tests.
 
-## Stay in touch
+## Conclusion
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+We have barely scratched the surface of this topic. Indeed there is a lot of articles out there about writing tests, so try as much as you can to follow these recommendations and keep your tests clean.

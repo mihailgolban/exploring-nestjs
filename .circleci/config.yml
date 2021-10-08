@@ -5,28 +5,48 @@ orbs:
   node: circleci/node@4.7
 
 jobs:
-  build:
+  run_tests:
     docker:
       - image: cimg/node:16.10.0
+    working_directory: ~/project
     steps:
       - checkout
       - run: node --version
-  test:
+      - run:
+          name: Install npm dependencies
+          command: npm install --save
+      - run:
+          name: Run Unit Tests
+          command: npm run test:cov
+      - store_test_coverage:
+          path: /tmp/test-coverage
+      - store_artifacts:
+          path: /tmp/artifacts/test-coverage
+          destination: coverage
+  run_lint:
     docker:
       - image: cimg/node:16.10.0
+    working_directory: ~/project
     steps:
-      - run: npm run test
-
-  es-lint:
-    docker:
-      - image: cimg/node:16.10.0
-    steps:
+      - run: node --version
       - run: npm run lint
+  build:
+    docker:
+      - image: cimg/node:16.10.0
+    working_directory: ~/project
+    steps:
+      - run: node --version
+      - run:
+          name: Build application
+          command: npm run build
+      - store_artifacts:
+          path: /tmp/artifacts/builds
+          destination: dist
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   version: 2
-  quality-control:
+  test-and-build:
     jobs:
       - test:
           filters:
@@ -40,9 +60,10 @@ workflows:
               only:
                 - staging
                 - master
-  build:
-    jobs:
       - build:
+          requires:
+            - test
+            - es-lint
           filters:
             branches:
               only:

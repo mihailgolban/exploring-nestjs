@@ -62,8 +62,8 @@ workflows:
                 - master
       - build:
           requires:
-            - test
-            - es-lint
+            - run_tests
+            - run_lint
           filters:
             branches:
               only:

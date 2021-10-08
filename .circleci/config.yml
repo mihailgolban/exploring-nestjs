@@ -30,6 +30,9 @@ jobs:
     steps:
       - checkout
       - run: node --version
+      - node/install-packages:
+          cache-path: ~/project/node_modules
+          override-ci-command: npm install
       - run: npm run lint
   build:
     docker:

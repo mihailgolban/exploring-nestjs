@@ -12,13 +12,13 @@ jobs:
     steps:
       - checkout
       - run: node --version
-      - run:
-          name: Install npm dependencies
-          command: npm install --save
+      - node/install-packages:
+          cache-path: ~/project/node_modules
+          override-ci-command: npm install
       - run:
           name: Run Unit Tests
           command: npm run test:cov
-      - store_test_coverage:
+      - store_test_results:
           path: /tmp/test-coverage
       - store_artifacts:
           path: /tmp/artifacts/test-coverage

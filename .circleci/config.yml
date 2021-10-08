@@ -48,13 +48,13 @@ workflows:
   version: 2
   test-and-build:
     jobs:
-      - test:
+      - run_tests:
           filters:
             branches:
               only:
                 - staging
                 - master
-      - es-lint:
+      - run_lint:
           filters:
             branches:
               only:

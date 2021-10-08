@@ -19,15 +19,16 @@ jobs:
           name: Run Unit Tests
           command: npm run test:cov
       - store_test_results:
-          path: /tmp/test-coverage
+          path: coverage
       - store_artifacts:
-          path: /tmp/artifacts/test-coverage
-          destination: coverage
+          path: coverage
+          destination: /tmp/artifacts/coverage
   run_lint:
     docker:
       - image: cimg/node:16.10.0
     working_directory: ~/project
     steps:
+      - checkout
       - run: node --version
       - run: npm run lint
   build:
@@ -40,8 +41,8 @@ jobs:
           name: Build application
           command: npm run build
       - store_artifacts:
-          path: /tmp/artifacts/builds
-          destination: dist
+          path: dist
+          destination: /tmp/artifacts/builds
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:

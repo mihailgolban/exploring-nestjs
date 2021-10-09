@@ -1,7 +1,7 @@
 import { TasksController } from './tasks.controller';
 import { TestingModule, Test } from '@nestjs/testing';
 import { TasksService } from './tasks.service';
-import { Task, TaskStatus } from '../../dist/tasks/task.model';
+import { Task, TaskStatus } from './task.model';
 describe('TasksController', () => {
   let tasksController: TasksController;
   let tasksService: TasksService;

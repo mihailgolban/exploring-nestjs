@@ -1,0 +1,48 @@
+version: 2.1
+
+# See: https://circleci.com/docs/2.0/orb-intro/
+orbs:
+  node: circleci/node@4.7
+
+commands:
+  prepare_dependencies:
+    steps:
+      - checkout
+      - run: node --version
+      - node/install-packages
+
+jobs:
+  build_app:
+    executor: node/default
+    steps:
+      - prepare_dependencies
+      - run:
+          name: Build App
+          command: npm run build
+  run_tests:
+    executor: node/default
+    steps:
+      - prepare_dependencies
+      - run:
+          name: Run Unit Tests
+          command: npm run test:cov
+  run_lint:
+    executor: node/default
+    steps:
+      - prepare_dependencies
+      - run:
+          name: Run eslint
+          command: npm run lint
+
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build_app
+      - run_lint:
+          requires:
+            - build_app
+      - run_tests:
+          requires:
+            - build_app

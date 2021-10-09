@@ -4,70 +4,58 @@ version: 2.1
 orbs:
   node: circleci/node@4.7
 
-jobs:
-  run_tests:
-    docker:
-      - image: cimg/node:16.10.0
-    working_directory: ~/project
+commands:
+  prepare_dependencies:
     steps:
       - checkout
       - run: node --version
-      - node/install-packages:
-          cache-path: ~/project/node_modules
-          override-ci-command: npm install
+      - node/install-packages
+
+jobs:
+  build_app:
+    executor: node/default
+    steps:
+      - prepare_dependencies
+      - run:
+          name: Build App
+          command: npm run build
+  run_tests:
+    executor: node/default
+    steps:
+      - prepare_dependencies
       - run:
           name: Run Unit Tests
           command: npm run test:cov
-      - store_test_results:
-          path: coverage
-      - store_artifacts:
-          path: coverage
-          destination: /tmp/artifacts/coverage
   run_lint:
-    docker:
-      - image: cimg/node:16.10.0
-    working_directory: ~/project
+    executor: node/default
     steps:
-      - checkout
-      - run: node --version
-      - node/install-packages:
-          cache-path: ~/project/node_modules
-          override-ci-command: npm install
-      - run: npm run lint
-  build:
-    docker:
-      - image: cimg/node:16.10.0
-    working_directory: ~/project
-    steps:
-      - run: node --version
+      - prepare_dependencies
       - run:
-          name: Build application
-          command: npm run build
-      - store_artifacts:
-          path: dist
-          destination: /tmp/artifacts/builds
+          name: Run eslint
+          command: npm run lint
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   version: 2
-  test-and-build:
+  build_and_test:
     jobs:
-      - run_tests:
+      - build_app:
           filters:
             branches:
               only:
                 - staging
                 - master
       - run_lint:
+          requires:
+            - build_app
           filters:
             branches:
               only:
                 - staging
                 - master
-      - build:
+      - run_tests:
           requires:
-            - run_tests
-            - run_lint
+            - build_app
           filters:
             branches:
               only:

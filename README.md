@@ -1,4 +1,4 @@
-# Unit testing a Nestjs App
+# Unit testing
 
 Automated testing is considered an essential part of any serious software development effort. The reason is simple. If you have tests, you do not fear making changes to the code! Here are some recommendations to ensure the best practices.
 

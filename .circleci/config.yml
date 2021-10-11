@@ -39,10 +39,25 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_app
+      - build_app:
+          filters:
+            branches:
+              only:
+                - staging
+                - master
       - run_lint:
           requires:
             - build_app
+          filters:
+            branches:
+              only:
+                - staging
+                - master
       - run_tests:
           requires:
             - build_app
+          filters:
+            branches:
+              only:
+                - staging
+                - master

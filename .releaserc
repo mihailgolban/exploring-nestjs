@@ -1,6 +1,0 @@
-{
-  "branches": ["master", "next"],
-  "repositoryUrl": git@github.com:mihailgolban/exploring-nestjs.git,
-  "plugins": ['@semantic-release/commit-analyzer', '@semantic-release/release-notes-generator', '@semantic-release/github'],
-  "ci": false
-}

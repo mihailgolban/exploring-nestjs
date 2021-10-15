@@ -13,31 +13,36 @@ commands:
 
 jobs:
   build_app:
-    executor: node/default
-    tag: 14.18.1
+    executor:
+      name: node/default
+      tag: 14.18.1
     steps:
       - prepare_dependencies
       - run:
           name: Build App
           command: npm run build
   run_tests:
-    executor: node/default
-    tag: 14.18.1
+    executor:
+      name: node/default
+      tag: 14.18.1
     steps:
       - prepare_dependencies
       - run:
           name: Run Unit Tests
           command: npm run test:cov
   run_lint:
-    executor: node/default
-    tag: 14.18.1
+    executor:
+      name: node/default
+      tag: 14.18.1
     steps:
       - prepare_dependencies
       - run:
           name: Run eslint
           command: npm run lint
   release:
-    executor: node/default
+    executor:
+      name: node/default
+      tag: 14.18.1
     steps:
       - prepare_dependencies
       - run: npx semantic-release

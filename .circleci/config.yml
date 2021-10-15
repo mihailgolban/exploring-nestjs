@@ -33,6 +33,11 @@ jobs:
       - run:
           name: Run eslint
           command: npm run lint
+  release:
+    executor: node/default
+    steps:
+      - prepare_dependencies
+      - run: npx semantic-release
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
@@ -60,4 +65,13 @@ workflows:
             branches:
               only:
                 - staging
+                - master
+      - release:
+          requires:
+            - build_app
+            - run_lint
+            - run_tests
+          filters:
+            branches:
+              only:
                 - master

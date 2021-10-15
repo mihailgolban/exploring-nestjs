@@ -14,6 +14,7 @@ commands:
 jobs:
   build_app:
     executor: node/default
+    tag: 14.18.1
     steps:
       - prepare_dependencies
       - run:
@@ -21,6 +22,7 @@ jobs:
           command: npm run build
   run_tests:
     executor: node/default
+    tag: 14.18.1
     steps:
       - prepare_dependencies
       - run:
@@ -28,6 +30,7 @@ jobs:
           command: npm run test:cov
   run_lint:
     executor: node/default
+    tag: 14.18.1
     steps:
       - prepare_dependencies
       - run:
@@ -68,7 +71,6 @@ workflows:
                 - master
       - release:
           requires:
-            - build_app
             - run_lint
             - run_tests
           filters:
